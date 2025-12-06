@@ -1,178 +1,43 @@
 ---
 // src/pages/admin/index.astro
-import "../styles/globals.css";
-const title = "Painel Admin - Blockpixel";
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { supabase } from '../../lib/supabaseClient';
+import { onMount } from 'astro/jsx-runtime';
 ---
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>{title}</title>
-  </head>
-  <body class="min-h-screen bg-gradient-to-b from-black to-deepblue text-white">
-    <div class="max-w-6xl mx-auto px-4 py-10">
-      <h1 class="text-3xl font-bold mb-4">Painel Admin</h1>
+<BaseLayout title="Painel Admin">
+  <div class="max-w-6xl mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-4">Painel Admin</h1>
+    <div id="status" class="mb-4"></div>
 
-      <div id="status" class="mb-4"></div>
-
-      <div class="mb-6">
-        <button id="btn-refresh" class="px-3 py-2 bg-white/6 rounded">Atualizar lista</button>
-        <button id="btn-logout" class="px-3 py-2 bg-red-600 rounded ml-2">Sair</button>
-      </div>
-
-      <section class="mb-8">
-        <h2 class="text-xl font-semibold mb-2">Criar Post</h2>
-        <div class="grid gap-2">
-          <input id="inp-title" placeholder="Título" class="p-3 rounded bg-white/5" />
-          <input id="inp-slug" placeholder="slug (ex: meu-post)" class="p-3 rounded bg-white/5" />
-          <input id="inp-excerpt" placeholder="Resumo" class="p-3 rounded bg-white/5" />
-          <textarea id="inp-content" placeholder="Conteúdo (markdown/HTML)" class="p-3 rounded bg-white/5 h-40"></textarea>
-          <div class="flex gap-2">
-            <button id="btn-create" class="px-4 py-2 bg-cyan-600 rounded">Criar</button>
-            <button id="btn-clear" class="px-4 py-2 bg-white/6 rounded">Limpar</button>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="text-xl font-semibold mb-4">Posts</h2>
-        <div id="posts-list" class="grid gap-3"></div>
-      </section>
+    <div class="flex gap-3 mb-6">
+      <a href="/admin/blog" class="btn btn-primary">Blog</a>
+      <a href="/admin/users" class="btn">Usuários</a>
+      <a href="/logout" class="btn">Sair</a>
     </div>
+  </div>
 
-    <script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-      const supabaseAnon = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-      const supabase = createClient(supabaseUrl, supabaseAnon);
+  <script type="module">
+    import { supabase } from '/src/lib/supabaseClient.js';
 
-      const statusEl = document.getElementById('status');
-      const postsList = document.getElementById('posts-list');
-
-      async function getSessionToken() {
-        const { data } = await supabase.auth.getSession();
-        return data?.session?.access_token ?? null;
+    async function checkAdmin() {
+      const { data } = await supabase.auth.getSession();
+      const userId = data?.session?.user?.id;
+      if (!userId) {
+        document.getElementById('status').innerHTML = '<div class="p-3 bg-yellow-600/10 rounded">Faça login em <a href="/login" class="underline">/login</a></div>';
+        return;
       }
-
-      async function requireLogin() {
-        const token = await getSessionToken();
-        if (!token) {
-          statusEl.innerHTML = '<div class="p-3 bg-yellow-600/10 rounded">Você precisa entrar. Vá para <a href="/login" class="underline">/login</a> e entre com seu email.</div>';
-          return false;
-        }
-        // optionally check server-side if this token belongs to admin by calling a small endpoint
-        statusEl.innerHTML = '<div class="p-3 bg-green-600/10 rounded">Conectado — carregando posts...</div>';
-        return true;
+      const { data: profile, error } = await supabase.from('profiles').select('role,email').eq('auth_id', userId).single();
+      if (error || !profile) {
+        document.getElementById('status').innerHTML = '<div class="p-3 bg-red-600/10 rounded">Perfil não encontrado. Adicione o profile no Supabase.</div>';
+        return;
       }
-
-      async function fetchPosts() {
-        const sessionToken = await getSessionToken();
-        const res = await fetch('/api/admin/posts', {
-          headers: { Authorization: 'Bearer ' + sessionToken }
-        });
-        const json = await res.json();
-        if (json.error) {
-          postsList.innerHTML = '<div class="p-3 bg-red-600/10 rounded">Erro: ' + json.error + '</div>';
-          return;
-        }
-        postsList.innerHTML = '';
-        (json.posts || []).forEach(p => {
-          const el = document.createElement('div');
-          el.className = 'p-4 glass rounded flex items-start justify-between';
-          el.innerHTML = `
-            <div>
-              <h3 class="font-semibold">${escapeHtml(p.title)}</h3>
-              <p class="text-sm opacity-80">${escapeHtml(p.excerpt || '')}</p>
-            </div>
-            <div class="flex gap-2">
-              <button data-id="${p.id}" class="btn-edit px-3 py-1 bg-white/6 rounded">Editar</button>
-              <button data-id="${p.id}" class="btn-del px-3 py-1 bg-red-600 rounded">Excluir</button>
-            </div>
-          `;
-          postsList.appendChild(el);
-        });
-
-        // attach events
-        document.querySelectorAll('.btn-del').forEach(btn => btn.addEventListener('click', async (e) => {
-          const id = e.currentTarget.dataset.id;
-          if (!confirm('Excluir post?')) return;
-          const token = await getSessionToken();
-          const res = await fetch('/api/admin/posts/' + id, {
-            method: 'DELETE',
-            headers: { Authorization: 'Bearer ' + token }
-          });
-          if (res.ok) fetchPosts();
-          else alert('Erro ao deletar');
-        }));
-
-        document.querySelectorAll('.btn-edit').forEach(btn => btn.addEventListener('click', async (e) => {
-          const id = e.currentTarget.dataset.id;
-          // load post data via posts list we already have (simple approach)
-          const token = await getSessionToken();
-          // fetch single post by listing (or call a GET /posts and filter)
-          const res = await fetch('/api/admin/posts', { headers: { Authorization: 'Bearer ' + token }});
-          const json = await res.json();
-          const p = (json.posts || []).find(x => x.id === id);
-          if (!p) return alert('Post não encontrado');
-          document.getElementById('inp-title').value = p.title || '';
-          document.getElementById('inp-slug').value = p.slug || '';
-          document.getElementById('inp-excerpt').value = p.excerpt || '';
-          document.getElementById('inp-content').value = p.content || '';
-          // change create to update (simple UX)
-          const btnCreate = document.getElementById('btn-create');
-          btnCreate.textContent = 'Atualizar';
-          btnCreate.dataset.editing = id;
-        }));
+      if (profile.role !== 'admin') {
+        document.getElementById('status').innerHTML = '<div class="p-3 bg-red-600/10 rounded">Acesso negado. Você não é admin.</div>';
+        return;
       }
+      document.getElementById('status').innerHTML = '<div class="p-3 bg-green-600/10 rounded">Bem-vindo, admin: ' + (profile.email||'') + '</div>';
+    }
 
-      function escapeHtml(str) {
-        return (str || '').replace(/[&<>"']/g, tag => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[tag]);
-      }
-
-      document.getElementById('btn-refresh').addEventListener('click', fetchPosts);
-
-      document.getElementById('btn-create').addEventListener('click', async (e) => {
-        const editingId = e.currentTarget.dataset.editing || null;
-        const title = document.getElementById('inp-title').value.trim();
-        const slug = document.getElementById('inp-slug').value.trim();
-        const excerpt = document.getElementById('inp-excerpt').value.trim();
-        const content = document.getElementById('inp-content').value.trim();
-        if (!title || !slug) return alert('Título e slug obrigatórios');
-
-        const token = await getSessionToken();
-        const body = { title, slug, excerpt, content };
-
-        if (!editingId) {
-          const res = await fetch('/api/admin/posts', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(body) });
-          const json = await res.json();
-          if (res.ok) { fetchPosts(); clearForm(); } else alert(json.error || 'Erro');
-        } else {
-          const res = await fetch('/api/admin/posts/' + editingId, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(body) });
-          if (res.ok) { fetchPosts(); clearForm(); e.currentTarget.textContent = 'Criar'; delete e.currentTarget.dataset.editing; } else { const j = await res.json(); alert(j.error || 'Erro'); }
-        }
-      });
-
-      document.getElementById('btn-clear').addEventListener('click', clearForm);
-
-      document.getElementById('btn-logout').addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        location.href = '/';
-      });
-
-      function clearForm() {
-        document.getElementById('inp-title').value = '';
-        document.getElementById('inp-slug').value = '';
-        document.getElementById('inp-excerpt').value = '';
-        document.getElementById('inp-content').value = '';
-        const btn = document.getElementById('btn-create');
-        btn.textContent = 'Criar';
-        delete btn.dataset.editing;
-      }
-
-      // initial check
-      (async () => {
-        const ok = await requireLogin();
-        if (ok) fetchPosts();
-      })();
-    </script>
-  </body>
-</html>
+    checkAdmin();
+  </script>
+</BaseLayout>
