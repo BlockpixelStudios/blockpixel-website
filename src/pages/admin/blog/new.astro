@@ -1,0 +1,65 @@
+---
+// src/pages/admin/blog/new.astro
+import '../../styles/globals.css';
+---
+<html><head><meta charset="utf-8"/><title>Criar Post</title></head>
+<body class="min-h-screen bg-gradient-to-b from-black to-deepblue text-white">
+  <div class="max-w-4xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-bold mb-4">Novo Post</h1>
+
+    <div class="grid gap-3">
+      <input id="title" placeholder="Título" class="p-3 rounded bg-white/5" />
+      <input id="slug" placeholder="slug (ex: meu-post)" class="p-3 rounded bg-white/5" />
+      <input id="excerpt" placeholder="Resumo" class="p-3 rounded bg-white/5" />
+      <textarea id="content" placeholder="Conteúdo (markdown ou HTML)" class="p-3 rounded bg-white/5 h-48"></textarea>
+
+      <input type="file" id="file" accept="image/*" />
+      <button id="btn-upload" class="btn">Upload imagem</button>
+
+      <div class="flex gap-2">
+        <button id="btn-create" class="btn btn-primary">Criar</button>
+        <a href="/admin/blog" class="btn">Cancelar</a>
+      </div>
+
+      <div id="msg" class="mt-3"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+
+    async function token() { const { data } = await supabase.auth.getSession(); return data?.session?.access_token ?? null; }
+
+    async function uploadFile(file) {
+      // simple public upload (if bucket public)
+      const path = `uploads/${Date.now()}_${file.name.replace(/\s+/g,'_')}`;
+      const { data, error } = await supabase.storage.from('uploads').upload(path, file);
+      if (error) throw error;
+      const { publicURL } = supabase.storage.from('uploads').getPublicUrl(path);
+      return publicURL;
+    }
+
+    document.getElementById('btn-upload').addEventListener('click', async () => {
+      const f = document.getElementById('file').files[0];
+      if (!f) return alert('Selecione um arquivo');
+      try {
+        const url = await uploadFile(f);
+        document.getElementById('content').value += `\n<img src="${url}" alt="img" />\n`;
+        document.getElementById('msg').innerText = 'Upload ok — URL inserida no conteúdo';
+      } catch (err) { alert('Erro upload: ' + err.message); }
+    });
+
+    document.getElementById('btn-create').addEventListener('click', async () => {
+      const t = document.getElementById('title').value.trim();
+      const s = document.getElementById('slug').value.trim();
+      const ex = document.getElementById('excerpt').value.trim();
+      const ct = document.getElementById('content').value.trim();
+      if (!t || !s) return alert('Título e slug obrigatórios');
+      const tk = await token();
+      const res = await fetch('/api/admin/posts', { method: 'POST', headers: { 'Content-Type':'application/json', Authorization: 'Bearer ' + tk }, body: JSON.stringify({ title: t, slug: s, excerpt: ex, content: ct })});
+      const j = await res.json();
+      if (res.ok) location.href = '/admin/blog'; else alert(j.error || 'Erro');
+    });
+  </script>
+</body></html>
