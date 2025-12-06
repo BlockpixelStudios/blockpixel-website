@@ -1,20 +1,35 @@
 ---
 // src/layouts/BaseLayout.astro
-import "../styles/globals.css";
-import Navbar from '../components/Navbar.astro';
+import '../styles/globals.css';
 const { title = 'Blockpixel Studios' } = Astro.props;
 ---
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen">
-    <div class="blob" style="width:520px;height:520px;left:-10%;top:-8%;background:radial-gradient(circle at 30% 30%, rgba(0,170,255,0.45), rgba(0,120,255,0.12));"></div>
-    <div class="blob" style="width:420px;height:420px;right:-8%;bottom:-6%;background:radial-gradient(circle at 70% 70%, rgba(0,255,230,0.36), rgba(60,180,255,0.08));"></div>
+  <body>
+    <div class="blob left-blob"></div>
+    <div class="blob right-blob"></div>
 
-    <Navbar />
+    <header class="glass p-3 sticky top-0 z-40">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3">
+          <img src="/logo-short.png" alt="logo" class="w-10 h-10" />
+          <div class="hidden sm:block">
+            <div class="font-semibold">Blockpixel Studios</div>
+            <div class="text-xs text-white/70">Tech · Jogos · Comunidade</div>
+          </div>
+        </a>
+        <nav class="flex gap-4">
+          <a href="/projects">Projetos</a>
+          <a href="/blog">Blog</a>
+          <a href="/login" class="btn">Entrar</a>
+        </nav>
+      </div>
+    </header>
+
     <main class="max-w-6xl mx-auto px-4 py-10">
       <slot />
     </main>
