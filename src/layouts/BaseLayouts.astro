@@ -1,0 +1,26 @@
+---
+// src/layouts/BaseLayout.astro
+import "../styles/globals.css";
+import Navbar from '../components/Navbar.astro';
+const { title = 'Blockpixel Studios' } = Astro.props;
+---
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen">
+    <div class="blob" style="width:520px;height:520px;left:-10%;top:-8%;background:radial-gradient(circle at 30% 30%, rgba(0,170,255,0.45), rgba(0,120,255,0.12));"></div>
+    <div class="blob" style="width:420px;height:420px;right:-8%;bottom:-6%;background:radial-gradient(circle at 70% 70%, rgba(0,255,230,0.36), rgba(60,180,255,0.08));"></div>
+
+    <Navbar />
+    <main class="max-w-6xl mx-auto px-4 py-10">
+      <slot />
+    </main>
+
+    <footer class="mt-12 text-sm text-white/70 text-center py-6">
+      © {new Date().getFullYear()} Blockpixel Studios
+    </footer>
+  </body>
+</html>
