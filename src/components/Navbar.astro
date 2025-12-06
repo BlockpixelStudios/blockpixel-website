@@ -1,0 +1,20 @@
+---
+// src/components/Navbar.astro
+---
+<nav class="w-full py-4 bg-black/30 backdrop-blur-sm sticky top-0 z-40">
+  <div class="max-w-6xl mx-auto px-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-3">
+      <img src="/logo-short.png" alt="Blockpixel" class="w-10 h-10" />
+      <div class="hidden sm:block">
+        <div class="font-semibold">Blockpixel Studios</div>
+        <div class="text-xs text-white/70">Tecnologia · Jogos · Comunidade</div>
+      </div>
+    </a>
+
+    <div class="flex gap-4 items-center text-sm">
+      <a href="/projects" class="hover:text-cyan-300">Projetos</a>
+      <a href="/blog" class="hover:text-cyan-300">Blog</a>
+      <a href="/login" class="px-3 py-1 rounded bg-white/6">Login</a>
+    </div>
+  </div>
+</nav>
