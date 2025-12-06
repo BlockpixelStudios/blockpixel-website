@@ -1,78 +1,40 @@
 ---
-import { supabase } from "../utils/supabase";
-
-let error = "";
-if (Astro.request.method === "POST") {
-  const form = await Astro.request.formData();
-  const email = form.get("email");
-  const password = form.get("password");
-
-  const { data, error: err } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if (err) {
-    error = "Email ou senha inválidos 😢";
-  } else {
-    return Astro.redirect("/dashboard");
-  }
-}
+// src/pages/login.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { supabase } from '../lib/supabaseClient';
 ---
+<BaseLayout title="Entrar">
+  <section class="max-w-xl mx-auto p-8">
+    <h1 class="text-2xl font-bold mb-4">Entrar / Criar conta</h1>
 
-<html>
-  <body>
-    <div class="login-box">
-      <h1>Entrar na Blockpixel</h1>
+    <form id="form" class="grid gap-3">
+      <input id="email" type="email" placeholder="seu@email.com" class="p-3 rounded bg-white/5" />
+      <input id="password" type="password" placeholder="senha (opcional, p/ sign up)" class="p-3 rounded bg-white/5" />
+      <div class="flex gap-2">
+        <button id="signup" type="button" class="btn btn-primary">Criar conta</button>
+        <button id="signin" type="button" class="btn">Entrar (link mágico)</button>
+      </div>
+      <p id="msg" class="mt-2 text-sm"></p>
+    </form>
 
-      {error && <p class="error">{error}</p>}
+    <script type="module">
+      import { supabase } from '/src/lib/supabaseClient.js';
 
-      <form method="POST">
-        <input type="email" name="email" placeholder="Seu email" required />
-        <input type="password" name="password" placeholder="Sua senha" required />
-        <button type="submit">Entrar 🚀</button>
-      </form>
+      document.getElementById('signin').addEventListener('click', async () => {
+        const email = document.getElementById('email').value;
+        const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + '/admin' }});
+        document.getElementById('msg').innerText = error ? error.message : 'Link enviado! Verifique seu e-mail.';
+      });
 
-      <p><a href="/register">Criar uma conta</a></p>
-    </div>
-
-    <style>
-      body {
-        background: #000;
-        font-family: Inter, sans-serif;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-      }
-      .login-box {
-        width: 350px;
-        padding: 25px;
-        background: #111;
-        border-radius: 12px;
-        border: 1px solid #333;
-      }
-      input {
-        width: 100%;
-        padding: 12px;
-        margin: 8px 0;
-        border-radius: 8px;
-        border: none;
-      }
-      button {
-        width: 100%;
-        padding: 12px;
-        background: linear-gradient(90deg,#0000FF,#FFFF00);
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-      }
-      .error {
-        color: #ff4b4b;
-        margin-bottom: 10px;
-      }
-    </style>
-  </body>
-</html>
+      document.getElementById('signup').addEventListener('click', async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value || Math.random().toString(36).slice(-8);
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) document.getElementById('msg').innerText = error.message;
+        else {
+          document.getElementById('msg').innerText = 'Conta criada! Faça login.';
+        }
+      });
+    </script>
+  </section>
+</BaseLayout>
