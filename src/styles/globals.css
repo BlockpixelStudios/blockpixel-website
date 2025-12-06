@@ -3,18 +3,47 @@
 @tailwind utilities;
 
 :root{
-  --bg-grad-1: #000000;
-  --bg-grad-2: #001b33;
-  --neon-cyan: rgba(0,255,230,0.95);
+  --bg1: #000;
+  --bg2: #001b33;
+  --glass: rgba(255,255,255,0.04);
+  --neon-cyan: rgba(0,230,210,0.95);
   --neon-blue: rgba(0,160,255,0.95);
 }
 
-html,body { height:100%; }
-body {
+/* reset */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-  background: linear-gradient(180deg, var(--bg-grad-1), var(--bg-grad-2));
-  color: #fff;
+  background: linear-gradient(180deg, var(--bg1), var(--bg2));
+  color:#fff;
+  -webkit-font-smoothing:antialiased;
 }
 
-.glass { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.06); backdrop-filter: blur(10px) saturate(120%); border-radius: 12px; }
-.blob { position: fixed; border-radius: 50%; filter: blur(40px); mix-blend-mode: screen; pointer-events: none; z-index: -1; opacity: .7; }
+/* glass */
+.glass{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(12px) saturate(120%);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+/* blobs */
+.blob{position:fixed;border-radius:50%;filter:blur(40px);mix-blend-mode:screen;pointer-events:none;z-index:-1;opacity:.75}
+.left-blob{left:-10%;top:-8%}
+.right-blob{right:-8%;bottom:-6%}
+
+/* buttons */
+.btn { padding:8px 12px;border-radius:8px; }
+.btn-primary { background: linear-gradient(90deg, var(--neon-blue), #00e7d1); color:#000; }
+
+/* glitch text */
+.glitch-text{position:relative;color:#fff;text-shadow:0 0 6px var(--neon-cyan)}
+.glitch-text::before,.glitch-text::after{content:attr(data-text);position:absolute;left:0;top:0;opacity:.8}
+.glitch-text::before{color:var(--neon-cyan);transform:translate(2px,-2px)}
+.glitch-text::after{color:var(--neon-blue);transform:translate(-2px,1px)}
+
+@media (max-width:640px){
+  .left-blob,.right-blob{display:none}
+                                                                }
