@@ -2,27 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* basic theme + glass + blobs + glitch */
 :root{
-  --bg1: #000000;
-  --bg2: #001b33;
-  --neon: rgba(0,230,210,0.95);
+  --bg-grad-1: #000000;
+  --bg-grad-2: #001b33;
+  --neon-cyan: rgba(0,255,230,0.95);
+  --neon-blue: rgba(0,160,255,0.95);
 }
 
 html,body { height:100%; }
 body {
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: linear-gradient(180deg, var(--bg1), var(--bg2));
-  color: #ffffff;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  background: linear-gradient(180deg, var(--bg-grad-1), var(--bg-grad-2));
+  color: #fff;
 }
 
-/* glass */
-.glass {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid rgba(255,255,255,0.06);
-  backdrop-filter: blur(10px) saturate(120%);
-  border-radius: 12px;
-}
-
-/* blob */
+.glass { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.06); backdrop-filter: blur(10px) saturate(120%); border-radius: 12px; }
 .blob { position: fixed; border-radius: 50%; filter: blur(40px); mix-blend-mode: screen; pointer-events: none; z-index: -1; opacity: .7; }
