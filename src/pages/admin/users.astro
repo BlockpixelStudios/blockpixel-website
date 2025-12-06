@@ -1,81 +1,53 @@
 ---
-import '../styles/globals.css';
+// src/pages/admin/users.astro
+import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
-<html>
-  <head><meta charset="utf-8" /><title>Admin - Usuários</title></head>
-  <body class="min-h-screen bg-gradient-to-b from-black to-deepblue text-white">
-    <div class="max-w-6xl mx-auto px-4 py-10">
-      <h1 class="text-2xl font-bold mb-4">Usuários</h1>
-
-      <div id="status" class="mb-4"></div>
-
-      <div class="mb-4">
-        <button id="refresh" class="px-3 py-2 bg-white/6 rounded">Atualizar</button>
-      </div>
-
-      <div id="users-list" class="grid gap-3"></div>
+<BaseLayout title="Admin - Usuários">
+  <div class="max-w-6xl mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-4">Usuários</h1>
+    <div class="mb-4">
+      <button id="refresh" class="btn">Atualizar</button>
     </div>
+    <div id="users-list"></div>
+  </div>
 
-    <script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-      const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+  <script type="module">
+    import { supabase } from '/src/lib/supabaseClient.js';
 
-      async function getToken() {
-        const { data } = await supabase.auth.getSession();
-        return data?.session?.access_token ?? null;
-      }
+    async function listUsers() {
+      const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+      const el = document.getElementById('users-list');
+      if (error) { el.innerHTML = '<div class="p-3 bg-red-600/10 rounded">Erro: '+error.message+'</div>'; return; }
+      el.innerHTML = '';
+      (data||[]).forEach(u=>{
+        const item = document.createElement('div');
+        item.className = 'glass p-3 rounded mb-3 flex justify-between items-center';
+        item.innerHTML = `<div><div class="font-semibold">${escapeHtml(u.display_name||u.email||'')}</div><div class="text-xs opacity-80">role: ${escapeHtml(u.role||'user')}</div></div>
+                          <div class="flex gap-2">
+                            <button data-id="${u.id}" class="btn btn-primary btn-promote">Promover</button>
+                            <button data-id="${u.id}" class="btn btn-danger btn-del">Excluir</button>
+                          </div>`;
+        el.appendChild(item);
+      });
 
-      async function fetchUsers() {
-        const token = await getToken();
-        const res = await fetch('/api/admin/users', { headers: { Authorization: 'Bearer ' + token }});
-        const json = await res.json();
-        const list = document.getElementById('users-list');
-        if (json.error) {
-          list.innerHTML = '<div class="p-3 bg-red-600/10 rounded">Erro: '+json.error+'</div>';
-          return;
-        }
-        list.innerHTML = '';
-        (json.users || []).forEach(u=>{
-          const el = document.createElement('div');
-          el.className = 'p-4 glass rounded flex justify-between items-center';
-          el.innerHTML = `
-            <div>
-              <div class="font-semibold">${escapeHtml(u.email || u.username || '')}</div>
-              <div class="text-xs opacity-80">role: ${escapeHtml(u.role || 'user')}</div>
-            </div>
-            <div class="flex gap-2">
-              <button data-id="${u.id}" class="btn-promote px-3 py-1 bg-cyan-600 rounded">Promover</button>
-              <button data-id="${u.id}" class="btn-delete px-3 py-1 bg-red-600 rounded">Excluir</button>
-            </div>`;
-          list.appendChild(el);
-        });
+      document.querySelectorAll('.btn-promote').forEach(b => b.addEventListener('click', async (e)=>{
+        const id = e.currentTarget.dataset.id;
+        if (!confirm('Promover para admin?')) return;
+        const { error } = await supabase.from('profiles').update({ role: 'admin' }).eq('id', id);
+        if (error) alert('Erro: '+error.message); else listUsers();
+      }));
 
-        document.querySelectorAll('.btn-promote').forEach(b=>b.addEventListener('click', async e=>{
-          const id = e.currentTarget.dataset.id;
-          if (!confirm('Tornar admin?')) return;
-          const token = await getToken();
-          const res = await fetch('/api/admin/users/'+id, { method: 'PUT', headers: { 'Content-Type':'application/json', Authorization:'Bearer '+token }, body: JSON.stringify({ role: 'admin' })});
-          if (res.ok) fetchUsers(); else alert('Erro');
-        }));
+      document.querySelectorAll('.btn-del').forEach(b => b.addEventListener('click', async (e)=>{
+        const id = e.currentTarget.dataset.id;
+        if (!confirm('Excluir profile?')) return;
+        const { error } = await supabase.from('profiles').delete().eq('id', id);
+        if (error) alert('Erro: '+error.message); else listUsers();
+      }));
+    }
 
-        document.querySelectorAll('.btn-delete').forEach(b=>b.addEventListener('click', async e=>{
-          const id = e.currentTarget.dataset.id;
-          if (!confirm('Excluir usuário?')) return;
-          const token = await getToken();
-          const res = await fetch('/api/admin/users/'+id, { method: 'DELETE', headers: { Authorization:'Bearer '+token }});
-          if (res.ok) fetchUsers(); else alert('Erro');
-        }));
-      }
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
 
-      function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
-
-      document.getElementById('refresh').addEventListener('click', fetchUsers);
-
-      (async ()=>{ // init
-        const token = await getToken();
-        if (!token) document.getElementById('status').innerHTML = '<div class="p-3 bg-yellow-600/10 rounded">Faça login em /login</div>';
-        await fetchUsers();
-      })();
-    </script>
-  </body>
-</html>
+    document.getElementById('refresh').addEventListener('click', listUsers);
+    listUsers();
+  </script>
+</BaseLayout>
