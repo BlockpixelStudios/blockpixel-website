@@ -1,37 +1,78 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import '../styles/globals.css';
-import { onMount } from 'solid-js'; // not required; we'll use script
+import { supabase } from "../utils/supabase";
+
+let error = "";
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const email = form.get("email");
+  const password = form.get("password");
+
+  const { data, error: err } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (err) {
+    error = "Email ou senha inválidos 😢";
+  } else {
+    return Astro.redirect("/dashboard");
+  }
+}
 ---
-<BaseLayout title="Login">
-  <section class="max-w-xl mx-auto p-8">
-    <h1 class="text-2xl font-bold mb-4">Entrar / Criar conta</h1>
 
-    <form id="login-form" class="grid gap-3">
-      <input id="email" type="email" placeholder="seu@email.com"
-             class="p-3 rounded bg-white/5" required />
-      <div class="flex gap-2">
-        <button type="button" id="signup" class="px-4 py-2 bg-cyan-600 rounded">Criar conta</button>
-        <button type="button" id="signin" class="px-4 py-2 bg-white/6 rounded">Entrar</button>
-      </div>
-      <p id="msg" class="mt-3 text-sm"></p>
-    </form>
+<html>
+  <body>
+    <div class="login-box">
+      <h1>Entrar na Blockpixel</h1>
 
-    <script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-      const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+      {error && <p class="error">{error}</p>}
 
-      document.getElementById('signup').addEventListener('click', async () => {
-        const email = document.getElementById('email').value;
-        const { data, error } = await supabase.auth.signUp({ email, password: Math.random().toString(36).slice(-8) });
-        document.getElementById('msg').innerText = error ? error.message : 'Conta criada! Verifique seu e-mail.';
-      });
+      <form method="POST">
+        <input type="email" name="email" placeholder="Seu email" required />
+        <input type="password" name="password" placeholder="Sua senha" required />
+        <button type="submit">Entrar 🚀</button>
+      </form>
 
-      document.getElementById('signin').addEventListener('click', async () => {
-        const email = document.getElementById('email').value;
-        const { data, error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + '/admin' } });
-        document.getElementById('msg').innerText = error ? error.message : 'Link enviado! Verifique o e-mail.';
-      });
-    </script>
-  </section>
-</BaseLayout>
+      <p><a href="/register">Criar uma conta</a></p>
+    </div>
+
+    <style>
+      body {
+        background: #000;
+        font-family: Inter, sans-serif;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .login-box {
+        width: 350px;
+        padding: 25px;
+        background: #111;
+        border-radius: 12px;
+        border: 1px solid #333;
+      }
+      input {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 8px;
+        border: none;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(90deg,#0000FF,#FFFF00);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .error {
+        color: #ff4b4b;
+        margin-bottom: 10px;
+      }
+    </style>
+  </body>
+</html>
