@@ -1,0 +1,81 @@
+---
+import '../styles/globals.css';
+---
+<html>
+  <head><meta charset="utf-8" /><title>Admin - Usuários</title></head>
+  <body class="min-h-screen bg-gradient-to-b from-black to-deepblue text-white">
+    <div class="max-w-6xl mx-auto px-4 py-10">
+      <h1 class="text-2xl font-bold mb-4">Usuários</h1>
+
+      <div id="status" class="mb-4"></div>
+
+      <div class="mb-4">
+        <button id="refresh" class="px-3 py-2 bg-white/6 rounded">Atualizar</button>
+      </div>
+
+      <div id="users-list" class="grid gap-3"></div>
+    </div>
+
+    <script type="module">
+      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+      const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+
+      async function getToken() {
+        const { data } = await supabase.auth.getSession();
+        return data?.session?.access_token ?? null;
+      }
+
+      async function fetchUsers() {
+        const token = await getToken();
+        const res = await fetch('/api/admin/users', { headers: { Authorization: 'Bearer ' + token }});
+        const json = await res.json();
+        const list = document.getElementById('users-list');
+        if (json.error) {
+          list.innerHTML = '<div class="p-3 bg-red-600/10 rounded">Erro: '+json.error+'</div>';
+          return;
+        }
+        list.innerHTML = '';
+        (json.users || []).forEach(u=>{
+          const el = document.createElement('div');
+          el.className = 'p-4 glass rounded flex justify-between items-center';
+          el.innerHTML = `
+            <div>
+              <div class="font-semibold">${escapeHtml(u.email || u.username || '')}</div>
+              <div class="text-xs opacity-80">role: ${escapeHtml(u.role || 'user')}</div>
+            </div>
+            <div class="flex gap-2">
+              <button data-id="${u.id}" class="btn-promote px-3 py-1 bg-cyan-600 rounded">Promover</button>
+              <button data-id="${u.id}" class="btn-delete px-3 py-1 bg-red-600 rounded">Excluir</button>
+            </div>`;
+          list.appendChild(el);
+        });
+
+        document.querySelectorAll('.btn-promote').forEach(b=>b.addEventListener('click', async e=>{
+          const id = e.currentTarget.dataset.id;
+          if (!confirm('Tornar admin?')) return;
+          const token = await getToken();
+          const res = await fetch('/api/admin/users/'+id, { method: 'PUT', headers: { 'Content-Type':'application/json', Authorization:'Bearer '+token }, body: JSON.stringify({ role: 'admin' })});
+          if (res.ok) fetchUsers(); else alert('Erro');
+        }));
+
+        document.querySelectorAll('.btn-delete').forEach(b=>b.addEventListener('click', async e=>{
+          const id = e.currentTarget.dataset.id;
+          if (!confirm('Excluir usuário?')) return;
+          const token = await getToken();
+          const res = await fetch('/api/admin/users/'+id, { method: 'DELETE', headers: { Authorization:'Bearer '+token }});
+          if (res.ok) fetchUsers(); else alert('Erro');
+        }));
+      }
+
+      function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+
+      document.getElementById('refresh').addEventListener('click', fetchUsers);
+
+      (async ()=>{ // init
+        const token = await getToken();
+        if (!token) document.getElementById('status').innerHTML = '<div class="p-3 bg-yellow-600/10 rounded">Faça login em /login</div>';
+        await fetchUsers();
+      })();
+    </script>
+  </body>
+</html>
