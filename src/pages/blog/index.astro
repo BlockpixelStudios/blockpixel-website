@@ -2,7 +2,7 @@
 // src/pages/blog/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { marked } from 'marked';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '/src/lib/supabase.js';
 const { data: posts } = await supabase.from('posts').select('id,title,slug,excerpt,created_at').order('created_at', { ascending: false });
 ---
 <BaseLayout title="Blog">
