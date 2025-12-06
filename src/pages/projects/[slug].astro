@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '/src/lib/supabase.js';
 const { slug } = Astro.params;
 const { data: project } = await supabase.from('projects').select('*').eq('slug', slug).single();
 ---
