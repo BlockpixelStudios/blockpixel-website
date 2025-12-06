@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../styles/globals.css';
+
+const fetchCounts = async () => {
+  // nota: usamos fetch para nossos endpoints que usam supabaseAdmin
+  const resPosts = await fetch('/api/admin/posts');
+  const postsJson = await resPosts.json();
+  const postsCount = (postsJson.posts || []).length;
+
+  // projects count (optional)
+  const resProjects = await fetch('/api/admin/projects').catch(() => null);
+  const projectsCount = resProjects ? ((await resProjects.json()).projects || []).length : 0;
+
+  return { postsCount, projectsCount };
+};
+
+const counts = await fetchCounts();
+---
+<BaseLayout title="Admin — Dashboard">
+  <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+
+  <div class="grid md:grid-cols-3 gap-6 mb-8">
+    <div class="glass p-6">
+      <div class="text-sm text-white/70">Posts</div>
+      <div class="text-2xl font-semibold mt-2">{counts.postsCount}</div>
+    </div>
+
+    <div class="glass p-6">
+      <div class="text-sm text-white/70">Projetos</div>
+      <div class="text-2xl font-semibold mt-2">{counts.projectsCount}</div>
+    </div>
+
+    <div class="glass p-6">
+      <div class="text-sm text-white/70">Usuários (aprox.)</div>
+      <div class="text-2xl font-semibold mt-2">—</div>
+    </div>
+  </div>
+
+  <div>
+    <a href="/admin" class="px-4 py-2 bg-white/6 rounded">Voltar ao painel</a>
+  </div>
+</BaseLayout>
