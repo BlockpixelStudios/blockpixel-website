@@ -1,12 +1,11 @@
+// tailwind.config.cjs
 module.exports = {
-  content: ['./src/**/*.{astro,html,js}'],
+  content: [
+    "./src/**/*.{astro,html,js,jsx,ts,tsx}",
+    "./public/**/*.html"
+  ],
   theme: {
-    extend: {
-      colors: {
-        bpblue: '#00E7D1',
-        deepblue: '#021728'
-      }
-    }
+    extend: {},
   },
-  plugins: []
+  plugins: [],
 };
