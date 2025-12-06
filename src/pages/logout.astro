@@ -1,19 +1,14 @@
 ---
+// src/pages/logout.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<html>
-  <head><meta charset="utf-8" /><title>Logout</title></head>
-  <body class="min-h-screen flex items-center justify-center bg-black text-white">
-    <div class="p-6 glass rounded">
-      <div>Saindo...</div>
-    </div>
+<BaseLayout title="Saindo...">
+  <div class="max-w-2xl mx-auto p-6 glass">
+    Saindo...
+  </div>
 
-    <script type="module">
-      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-      const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
-      (async ()=>{
-        await supabase.auth.signOut();
-        location.href = '/';
-      })();
-    </script>
-  </body>
-</html>
+  <script type="module">
+    import { supabase } from '/src/lib/supabaseClient.js';
+    (async ()=>{ await supabase.auth.signOut(); location.href = '/'; })();
+  </script>
+</BaseLayout>
