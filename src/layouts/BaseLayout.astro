@@ -1,22 +1,41 @@
 ---
-const { title } = Astro.props;
-import Navbar from "../components/Navbar.astro";
-import Footer from "../components/Footer.astro";
+import "../styles/globals.css";
+const { title = "Blockpixel Studios" } = Astro.props;
 ---
-
-<html lang="pt-br" class="bg-black text-white">
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
-    <title>{title ?? "Blockpixel Studios"}</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    <link rel="icon" href="/favicon.svg" />
   </head>
+  <body class="min-h-screen">
+    <div class="blob left-blob"></div>
+    <div class="blob right-blob"></div>
 
-  <body class="min-h-screen flex flex-col">
-    <Navbar />
+    <header class="glass p-4 sticky top-0 z-40">
+      <nav class="max-w-6xl mx-auto flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3">
+          <img src="/logo-short.png" alt="logo" class="w-10 h-10" />
+          <div class="hidden sm:block">
+            <div class="font-semibold">Blockpixel Studios</div>
+            <div class="text-xs text-white/70">Tech · Jogos · Comunidade</div>
+          </div>
+        </a>
+        <div class="flex gap-4">
+          <a href="/projetos">Projetos</a>
+          <a href="/blog">Blog</a>
+          <a href="/suporte">Suporte</a>
+        </div>
+      </nav>
+    </header>
 
-    <main class="flex-1 px-6 py-10">
+    <main class="max-w-6xl mx-auto px-4 py-10">
       <slot />
     </main>
 
-    <Footer />
+    <footer class="mt-12 text-sm text-white/70 text-center py-6">
+      © {new Date().getFullYear()} Blockpixel Studios
+    </footer>
   </body>
 </html>
