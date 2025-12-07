@@ -10,10 +10,10 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "astro": "^4.15.8",
-    "@astrojs/tailwind": "^5.1.0",
-    "@astrojs/vercel": "^8.0.0",
-    "@supabase/supabase-js": "^2.44.4"
+  "astro": "^4.15.8",
+  "@astrojs/tailwind": "^5.1.0",
+  "@astrojs/vercel": "^8.0.0",
+  "@supabase/supabase-js": "^2.44.4"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.14",
