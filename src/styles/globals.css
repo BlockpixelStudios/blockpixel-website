@@ -2,36 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-:root{
-  --bg1:#000;
-  --bg2:#001b33;
-  --neon-cyan: rgba(0,230,210,0.95);
-  --neon-blue: rgba(0,160,255,0.95);
+/* Simple glass + neon starter */
+:root {
+  --bg1: #000000;
+  --bg2: #001426;
+  --neon: rgba(0, 230, 210, 0.95);
 }
 
-/* reset */
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
-  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-  background: linear-gradient(180deg,var(--bg1),var(--bg2));
-  color:#fff;
+html,body { height:100%; }
+body {
+  background: linear-gradient(180deg, var(--bg1), var(--bg2));
+  color: #fff;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
 }
 
 /* glass */
-.glass{
+.glass {
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border:1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.06);
   backdrop-filter: blur(12px) saturate(120%);
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 12px;
 }
 
 /* blobs */
-.blob{position:fixed;border-radius:50%;filter:blur(40px);mix-blend-mode:screen;pointer-events:none;z-index:-1;opacity:.75}
-.left-blob{left:-10%;top:-8%;width:520px;height:520px;background:radial-gradient(circle at 30% 30%, rgba(0,170,255,0.45), rgba(0,120,255,0.12));}
-.right-blob{right:-8%;bottom:-6%;width:420px;height:420px;background:radial-gradient(circle at 70% 70%, rgba(0,255,230,0.36), rgba(60,180,255,0.08));}
-
-/* misc */
-.btn{padding:8px 12px;border-radius:8px}
-.btn-primary{background: linear-gradient(90deg,var(--neon-blue),var(--neon-cyan));color:#000}
+.blob { position: fixed; border-radius: 50%; filter: blur(40px); mix-blend-mode: screen; pointer-events: none; opacity: .8; z-index:-1; }
+.left-blob{ left:-10%; top:-8%; width:520px; height:520px; background: radial-gradient(circle at 30% 30%, rgba(0,170,255,0.45), rgba(0,120,255,0.12)); }
+.right-blob{ right:-8%; bottom:-6%; width:420px; height:420px; background: radial-gradient(circle at 70% 70%, rgba(0,255,230,0.36), rgba(60,180,255,0.08)); }
