@@ -5,7 +5,6 @@ export default function Header() {
     <header className="header">
       <Link href="/" className="logo">
         <img src="/logo.png" alt="Blockpixel Studios" />
-        <span>Blockpixel</span>
       </Link>
 
       <nav>
