@@ -1,4 +1,4 @@
-import { getProjects } from "@/lib/markdown";
+import { getProjects } from "../../../lib/markdown";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
