@@ -1,5 +1,5 @@
-import { getProjects } from "../../lib/markdown";
 import Link from "next/link";
+import { getProjects } from "@/lib/markdown";
 
 export default function ProjetosPage() {
   const projects = getProjects();
@@ -8,31 +8,23 @@ export default function ProjetosPage() {
     <main className="container">
       <h1>Projetos</h1>
 
-      <p style={{ color: "var(--muted)", marginTop: "10px" }}>
-        Alguns dos universos e ideias que estamos construindo na Blockpixel.
-      </p>
-
-      <div style={{ marginTop: "40px" }}>
-        {projects.map((project: any) => (
-          <article
+      <div className="grid">
+        {projects.map((project) => (
+          <Link
             key={project.slug}
-            style={{
-              padding: "24px",
-              border: "1px solid #222",
-              borderRadius: "8px",
-              marginBottom: "20px",
-            }}
+            href={`/projetos/${project.slug}`}
           >
-            <h2>{project.title}</h2>
+            <article className="card">
+              {project.status && (
+                <span className="badge">
+                  {project.status}
+                </span>
+              )}
 
-            <p style={{ color: "var(--muted)", margin: "8px 0" }}>
-              Status: {project.status}
-            </p>
-
-            <Link href={`/projetos/${project.slug}`}>
-              Ver projeto →
-            </Link>
-          </article>
+              <h2>{project.title}</h2>
+              <p>{project.description}</p>
+            </article>
+          </Link>
         ))}
       </div>
     </main>
