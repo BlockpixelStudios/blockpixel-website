@@ -1,4 +1,5 @@
-import { getBlogPosts } from "../../lib/markdown";
+import Link from "next/link";
+import { getBlogPosts } from "@/lib/markdown";
 
 export default function BlogPage() {
   const posts = getBlogPosts();
@@ -7,12 +8,16 @@ export default function BlogPage() {
     <main className="container">
       <h1>Blog</h1>
 
-      {posts.map((post: any) => (
-        <article key={post.slug} style={{ marginTop: "40px" }}>
-          <h2>{post.title}</h2>
-          <p style={{ color: "var(--muted)" }}>{post.description}</p>
-        </article>
-      ))}
+      <div className="grid">
+        {posts.map((post) => (
+          <Link key={post.slug} href={`/blog/${post.slug}`}>
+            <article className="card">
+              <h2>{post.title}</h2>
+              <p>{post.description}</p>
+            </article>
+          </Link>
+        ))}
+      </div>
     </main>
   );
 }
