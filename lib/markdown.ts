@@ -2,27 +2,67 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 
-function readMarkdown(dir: string) {
-  const directory = path.join(process.cwd(), dir);
-  const files = fs.readdirSync(directory);
+/* =========================
+   TIPOS
+========================= */
 
-  return files.map((file) => {
-    const filePath = path.join(directory, file);
-    const fileContents = fs.readFileSync(filePath, "utf8");
-    const { data, content } = matter(fileContents);
-
-    return {
-      slug: file.replace(".md", ""),
-      ...data,
-      content,
-    };
-  });
+export interface MarkdownItem {
+  slug: string;
+  title: string;
+  date?: string;
+  description?: string;
+  content: string;
 }
 
-export function getProjects() {
-  return readMarkdown("content/projects");
+/* =========================
+   FUNÇÃO BASE
+========================= */
+
+function readMarkdown(dir: string): MarkdownItem[] {
+  const directoryPath = path.join(process.cwd(), dir);
+
+  if (!fs.existsSync(directoryPath)) return [];
+
+  const files = fs.readdirSync(directoryPath);
+
+  return files
+    .filter((file) => file.endsWith(".md"))
+    .map((file) => {
+      const fullPath = path.join(directoryPath, file);
+      const fileContents = fs.readFileSync(fullPath, "utf8");
+
+      const { data, content } = matter(fileContents);
+
+      return {
+        slug: file.replace(/\.md$/, ""),
+        title: data.title ?? "Sem título",
+        date: data.date,
+        description: data.description,
+        content,
+      };
+    });
 }
 
-export function getBlogPosts() {
+/* =========================
+   BLOG
+========================= */
+
+export function getBlogPosts(): MarkdownItem[] {
   return readMarkdown("content/blog");
+}
+
+export function getBlogPostBySlug(slug: string): MarkdownItem | undefined {
+  return getBlogPosts().find((post) => post.slug === slug);
+}
+
+/* =========================
+   PROJETOS
+========================= */
+
+export function getProjects(): MarkdownItem[] {
+  return readMarkdown("content/projetos");
+}
+
+export function getProjectBySlug(slug: string): MarkdownItem | undefined {
+  return getProjects().find((project) => project.slug === slug);
 }
