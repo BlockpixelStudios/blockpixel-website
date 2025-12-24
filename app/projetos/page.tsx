@@ -1,4 +1,4 @@
-import { getProjects } from "@/lib/markdown";
+import { getProjects } from "../../lib/markdown";
 import Link from "next/link";
 
 export default function ProjetosPage() {
