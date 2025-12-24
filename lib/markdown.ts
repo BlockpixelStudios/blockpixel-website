@@ -11,6 +11,7 @@ export interface MarkdownItem {
   title: string;
   date?: string;
   description?: string;
+  status?: string; // 👈 ADICIONE ISSO
   content: string;
 }
 
