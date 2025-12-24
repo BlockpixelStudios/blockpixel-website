@@ -1,4 +1,4 @@
-import { getBlogPosts } from "@/lib/markdown";
+import { getBlogPosts } from "../../lib/markdown";
 
 export default function BlogPage() {
   const posts = getBlogPosts();
